@@ -6,16 +6,13 @@ then converts back to an entity and asserts field equality.
 This guarantees the mappers are loss-free for every field.
 """
 
-from datetime import date, datetime
+from datetime import date
 from decimal import Decimal
-
-import pytest
 
 from app.domain.entities.notification import Notification
 from app.domain.entities.opportunity import Opportunity
 from app.domain.entities.opportunity_match import OpportunityMatch
 from app.domain.entities.organization import Organization
-from app.domain.entities.professor import Professor
 from app.domain.entities.scrape_job import ScrapeJob
 from app.domain.entities.scrape_result import ScrapeResult
 from app.domain.entities.skill import Skill
@@ -38,7 +35,6 @@ from app.infrastructure.db.mappers import (
     opportunity_mapper,
     opportunity_match_mapper,
     organization_mapper,
-    professor_mapper,
     scrape_job_mapper,
     skill_mapper,
     source_mapper,

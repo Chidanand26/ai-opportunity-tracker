@@ -1,5 +1,6 @@
 from dataclasses import dataclass, field
 from datetime import datetime
+from typing import Any
 
 from app.domain.enums import SourceType
 
@@ -24,7 +25,7 @@ class Source:
     organization_id: int | None = None  # nullable — some sources aren't org-specific
     is_active: bool = True
     scrape_frequency_hours: int = 24
-    config: dict = field(default_factory=dict)
+    config: dict[str, Any] = field(default_factory=dict)
     last_scraped_at: datetime | None = None
     created_at: datetime | None = None
     updated_at: datetime | None = None

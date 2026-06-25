@@ -145,11 +145,15 @@ class RssFeedAdapter(BaseSourceAdapter):
     @staticmethod
     def _parse_atom_entry(entry: Tag, source: Source) -> RawPosting | None:
         title = _text(entry, "title")
-        # Atom <link> is an element with href attribute, not text content
+        # Atom <link> is an element with href attribute, not text content.
+        # BeautifulSoup attribute access can return a list for multi-valued
+        # attributes, so normalise to a single string.
         link_tag = entry.find("link")
         link = ""
         if isinstance(link_tag, Tag):
-            link = link_tag.get("href", "") or _text(entry, "link") or ""
+            raw_href = link_tag.get("href", "")
+            href = raw_href[0] if isinstance(raw_href, list) else raw_href
+            link = href or _text(entry, "link") or ""
 
         if not title or not link:
             return None

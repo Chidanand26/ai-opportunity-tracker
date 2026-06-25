@@ -65,4 +65,5 @@ def get_logger(name: str) -> structlog.BoundLogger:
     positional arguments passed to structlog.get_logger(), so passing the name
     there has no effect.
     """
-    return structlog.get_logger().bind(logger=name)
+    logger: structlog.BoundLogger = structlog.get_logger().bind(logger=name)
+    return logger

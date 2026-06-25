@@ -74,9 +74,13 @@ select = [
     "UP",   # pyupgrade — modernize syntax
     "B",    # bugbear — common mistakes
     "SIM",  # simplify
-    "TCH",  # type-checking imports
     "RUF",  # ruff-specific rules
 ]
+# TCH (flake8-type-checking) is intentionally NOT enabled. It pushes
+# annotation-only imports into `if TYPE_CHECKING:` blocks, which breaks
+# SQLAlchemy and Pydantic — both evaluate annotations at runtime (e.g. a
+# `Mapped[dict[str, Any]]` column needs `Any` importable at mapper-config time).
+# The runtime cost it saves is negligible for our lightweight domain imports.
 ignore = [
     "E501",   # line length — handled by formatter
     "B008",   # do not perform function calls in default arguments (FastAPI Depends pattern)

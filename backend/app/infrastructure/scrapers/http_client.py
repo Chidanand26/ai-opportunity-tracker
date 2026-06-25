@@ -7,6 +7,9 @@ For JS-heavy pages, use BrowserManager instead.
 
 from __future__ import annotations
 
+from types import TracebackType
+from typing import Any
+
 import httpx
 from tenacity import (
     retry,
@@ -44,7 +47,7 @@ class HttpClient:
         timeout: int = 30,
         proxy: str | None = None,
     ) -> None:
-        kwargs: dict = {
+        kwargs: dict[str, Any] = {
             "headers": {
                 "User-Agent": user_agent,
                 "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
@@ -57,12 +60,17 @@ class HttpClient:
             kwargs["proxy"] = proxy
         self._client = httpx.AsyncClient(**kwargs)
 
-    async def __aenter__(self) -> "HttpClient":
+    async def __aenter__(self) -> HttpClient:
         await self._client.__aenter__()
         return self
 
-    async def __aexit__(self, *args: object) -> None:
-        await self._client.__aexit__(*args)
+    async def __aexit__(
+        self,
+        exc_type: type[BaseException] | None,
+        exc_value: BaseException | None,
+        traceback: TracebackType | None,
+    ) -> None:
+        await self._client.__aexit__(exc_type, exc_value, traceback)
 
     @retry(
         stop=stop_after_attempt(3),
@@ -70,16 +78,16 @@ class HttpClient:
         retry=retry_if_exception_type(_RETRYABLE),
         reraise=True,
     )
-    async def get(self, url: str, **kwargs: object) -> httpx.Response:
+    async def get(self, url: str, **kwargs: Any) -> httpx.Response:
         """
         GET request with automatic retry on transient failures.
         Raises httpx.HTTPStatusError for non-2xx when raise_for_status=True.
         """
         logger.debug("http_get", url=url)
-        response = await self._client.get(url, **kwargs)
+        response: httpx.Response = await self._client.get(url, **kwargs)
         return response
 
-    async def get_text(self, url: str, **kwargs: object) -> tuple[str, int, str]:
+    async def get_text(self, url: str, **kwargs: Any) -> tuple[str, int, str]:
         """
         Convenience wrapper — returns (content, status_code, content_type).
         Does not raise on non-2xx; caller decides what to do with status.

@@ -1,6 +1,7 @@
 from dataclasses import dataclass, field
 from datetime import date, datetime
 from decimal import Decimal
+from typing import Any
 
 from app.domain.enums import LocationType, OpportunityType
 
@@ -41,15 +42,16 @@ class Opportunity:
     duration_weeks: int | None = None
     requirements: str = ""          # raw requirements text
     is_active: bool = True
-    raw_data: dict = field(default_factory=dict)    # original scrape payload
-    metadata: dict = field(default_factory=dict)    # flexible extra fields
+    raw_data: dict[str, Any] = field(default_factory=dict)   # original scrape payload
+    metadata: dict[str, Any] = field(default_factory=dict)   # flexible extra fields
     created_at: datetime | None = None
     updated_at: datetime | None = None
 
     def is_deadline_soon(self, days: int = 7) -> bool:
         if self.application_deadline is None:
             return False
-        from datetime import date as _date, timedelta
+        from datetime import date as _date
+        from datetime import timedelta
         return self.application_deadline <= _date.today() + timedelta(days=days)
 
     def __str__(self) -> str:

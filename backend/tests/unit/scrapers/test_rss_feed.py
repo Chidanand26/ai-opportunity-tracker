@@ -4,7 +4,6 @@ Unit tests for RssFeedAdapter.parse_postings() — no network, no database.
 All feeds are embedded as strings so these tests run offline in any environment.
 """
 
-import pytest
 
 from app.domain.entities.source import Source
 from app.domain.enums import SourceType

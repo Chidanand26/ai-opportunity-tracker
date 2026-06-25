@@ -21,6 +21,10 @@ from typing import Annotated
 from fastapi import Depends
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from app.application.services.opportunity_service import OpportunityService
+from app.application.services.organization_service import OrganizationService
+from app.application.services.professor_service import ProfessorService
+from app.application.services.source_service import SourceService
 from app.infrastructure.db.repositories.notification_repository import (
     SqlAlchemyNotificationRepository,
 )
@@ -99,3 +103,37 @@ def get_notification_repo(
     session: Annotated[AsyncSession, Depends(get_db)],
 ) -> SqlAlchemyNotificationRepository:
     return SqlAlchemyNotificationRepository(session)
+
+
+# ── Application services ──────────────────────────────────────────────────────
+# Services are composed from the repository providers above. Because get_db is
+# request-scoped, every repository injected into one request shares a single
+# AsyncSession, so a service's multi-repository use cases run in one transaction.
+
+
+def get_organization_service(
+    organizations: Annotated[SqlAlchemyOrganizationRepository, Depends(get_organization_repo)],
+) -> OrganizationService:
+    return OrganizationService(organizations)
+
+
+def get_professor_service(
+    professors: Annotated[SqlAlchemyProfessorRepository, Depends(get_professor_repo)],
+    organizations: Annotated[SqlAlchemyOrganizationRepository, Depends(get_organization_repo)],
+) -> ProfessorService:
+    return ProfessorService(professors, organizations)
+
+
+def get_source_service(
+    sources: Annotated[SqlAlchemySourceRepository, Depends(get_source_repo)],
+    organizations: Annotated[SqlAlchemyOrganizationRepository, Depends(get_organization_repo)],
+) -> SourceService:
+    return SourceService(sources, organizations)
+
+
+def get_opportunity_service(
+    opportunities: Annotated[SqlAlchemyOpportunityRepository, Depends(get_opportunity_repo)],
+    sources: Annotated[SqlAlchemySourceRepository, Depends(get_source_repo)],
+    organizations: Annotated[SqlAlchemyOrganizationRepository, Depends(get_organization_repo)],
+) -> OpportunityService:
+    return OpportunityService(opportunities, sources, organizations)

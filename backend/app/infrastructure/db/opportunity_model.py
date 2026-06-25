@@ -1,13 +1,12 @@
 from __future__ import annotations
 
-from datetime import date, datetime
+from datetime import date
 from decimal import Decimal
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Any
 
 from sqlalchemy import (
     Boolean,
     Date,
-    DateTime,
     ForeignKey,
     Index,
     Integer,
@@ -23,12 +22,12 @@ from app.infrastructure.db.base import Base
 from app.infrastructure.db.skill_model import opportunity_skills
 
 if TYPE_CHECKING:
+    from app.infrastructure.db.opportunity_match_model import OpportunityMatchModel
     from app.infrastructure.db.organization_model import OrganizationModel
     from app.infrastructure.db.professor_model import ProfessorModel
-    from app.infrastructure.db.source_model import SourceModel
-    from app.infrastructure.db.skill_model import SkillModel
-    from app.infrastructure.db.opportunity_match_model import OpportunityMatchModel
     from app.infrastructure.db.scrape_result_model import ScrapeResultModel
+    from app.infrastructure.db.skill_model import SkillModel
+    from app.infrastructure.db.source_model import SourceModel
 
 
 class OpportunityModel(Base):
@@ -66,8 +65,8 @@ class OpportunityModel(Base):
     requirements: Mapped[str] = mapped_column(Text, default="")
 
     is_active: Mapped[bool] = mapped_column(Boolean, default=True, nullable=False)
-    raw_data: Mapped[dict] = mapped_column(JSONB, default=dict)
-    metadata_: Mapped[dict] = mapped_column("metadata", JSONB, default=dict)
+    raw_data: Mapped[dict[str, Any]] = mapped_column(JSONB, default=dict)
+    metadata_: Mapped[dict[str, Any]] = mapped_column("metadata", JSONB, default=dict)
 
     # Relationships
     source: Mapped[SourceModel] = relationship("SourceModel", back_populates="opportunities")

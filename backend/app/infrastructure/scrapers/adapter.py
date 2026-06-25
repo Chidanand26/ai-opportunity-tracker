@@ -26,10 +26,10 @@ Example minimal adapter:
 
 from __future__ import annotations
 
-import asyncio
 from abc import ABC, abstractmethod
 from datetime import datetime
-from typing import ClassVar
+from types import TracebackType
+from typing import Any, ClassVar
 
 from app.core.logging import get_logger
 from app.domain.entities.source import Source
@@ -64,13 +64,13 @@ class BaseSourceAdapter(ABC):
     proxy: ClassVar[str | None] = None
 
     # ── Internal state (not part of public interface) ─────────────────────────
-    def __init__(self, source_config: dict | None = None) -> None:
+    def __init__(self, source_config: dict[str, Any] | None = None) -> None:
         """
         Args:
             source_config: The source.config dict from the database — adapter-specific
                 settings (CSS selectors, auth tokens, etc.).
         """
-        self._config: dict = source_config or {}
+        self._config: dict[str, Any] = source_config or {}
         self._http: HttpClient | None = None
         self._rate_limiter = RateLimiter(self.requests_per_minute)
         self._robots = RobotsChecker()
@@ -78,7 +78,7 @@ class BaseSourceAdapter(ABC):
 
     # ── Lifecycle ─────────────────────────────────────────────────────────────
 
-    async def __aenter__(self) -> "BaseSourceAdapter":
+    async def __aenter__(self) -> BaseSourceAdapter:
         proxy = self._config.get("proxy") or self.proxy
         self._http = HttpClient(
             user_agent=self.user_agent,
@@ -88,9 +88,14 @@ class BaseSourceAdapter(ABC):
         await self._http.__aenter__()
         return self
 
-    async def __aexit__(self, *args: object) -> None:
+    async def __aexit__(
+        self,
+        exc_type: type[BaseException] | None,
+        exc_value: BaseException | None,
+        traceback: TracebackType | None,
+    ) -> None:
         if self._http:
-            await self._http.__aexit__(*args)
+            await self._http.__aexit__(exc_type, exc_value, traceback)
 
     # ── Abstract interface — subclasses implement ONLY these ─────────────────
 

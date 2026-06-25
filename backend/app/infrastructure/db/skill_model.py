@@ -32,7 +32,7 @@ class SkillModel(Base):
     id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
     name: Mapped[str] = mapped_column(String(100), nullable=False)
     category: Mapped[str] = mapped_column(String(50), nullable=False)
-    aliases: Mapped[list] = mapped_column(JSONB, default=list)   # ["ML", "machine-learning"]
+    aliases: Mapped[list[str]] = mapped_column(JSONB, default=list)  # ["ML", "machine-learning"]
 
     __table_args__ = (
         UniqueConstraint("name", name="uq_skills_name"),

@@ -22,8 +22,8 @@ __all__ = [
     "ProfessorRepository",
     "RawPosting",
     "ScrapeJobRepository",
-    "SourceAdapter",
     "SkillRepository",
+    "SourceAdapter",
     "SourceRepository",
     "UserProfileRepository",
 ]

@@ -8,8 +8,8 @@ from sqlalchemy.orm import Mapped, mapped_column, relationship
 from app.infrastructure.db.base import Base
 
 if TYPE_CHECKING:
-    from app.infrastructure.db.scrape_job_model import ScrapeJobModel
     from app.infrastructure.db.opportunity_model import OpportunityModel
+    from app.infrastructure.db.scrape_job_model import ScrapeJobModel
 
 
 class ScrapeResultModel(Base):

@@ -26,7 +26,7 @@ _MIN_CONTENT_LENGTH = 200  # bytes — anything shorter is likely an error page
 
 
 class ValidateStage:
-    def __init__(self, adapter: "BaseSourceAdapter") -> None:
+    def __init__(self, adapter: BaseSourceAdapter) -> None:
         self._adapter = adapter
 
     async def run(self, ctx: ScrapeContext) -> ScrapeContext:

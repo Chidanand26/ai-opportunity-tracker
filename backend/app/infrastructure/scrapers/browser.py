@@ -9,6 +9,9 @@ Prerequisites:
 
 from __future__ import annotations
 
+from types import TracebackType
+from typing import Any
+
 from app.core.logging import get_logger
 
 logger = get_logger(__name__)
@@ -38,21 +41,29 @@ class BrowserManager:
         self._headless = headless
         self._proxy = proxy
         self._timeout_ms = timeout_ms
-        self._playwright = None
-        self._browser = None
+        # Typed as Any: the concrete Playwright/Browser types are imported lazily
+        # inside __aenter__ to avoid importing the heavy playwright package at
+        # module load time.
+        self._playwright: Any = None
+        self._browser: Any = None
 
-    async def __aenter__(self) -> "BrowserManager":
+    async def __aenter__(self) -> BrowserManager:
         from playwright.async_api import async_playwright
 
         self._playwright = await async_playwright().start()
-        launch_kwargs: dict = {"headless": self._headless}
+        launch_kwargs: dict[str, Any] = {"headless": self._headless}
         if self._proxy:
             launch_kwargs["proxy"] = {"server": self._proxy}
         self._browser = await self._playwright.chromium.launch(**launch_kwargs)
         logger.debug("browser_started", headless=self._headless, proxy=bool(self._proxy))
         return self
 
-    async def __aexit__(self, *args: object) -> None:
+    async def __aexit__(
+        self,
+        exc_type: type[BaseException] | None,
+        exc_value: BaseException | None,
+        traceback: TracebackType | None,
+    ) -> None:
         if self._browser:
             await self._browser.close()
         if self._playwright:
@@ -81,7 +92,7 @@ class BrowserManager:
             await page.goto(url, wait_until=_WAIT_UNTIL, timeout=timeout)
             if wait_for_selector:
                 await page.wait_for_selector(wait_for_selector, timeout=timeout)
-            html = await page.content()
+            html: str = await page.content()
             logger.debug("browser_page_fetched", url=url, html_len=len(html))
             return html
         finally:

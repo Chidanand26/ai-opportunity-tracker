@@ -18,7 +18,6 @@ from app.domain.entities.source import Source
 from app.domain.entities.user_profile import UserProfile
 from app.domain.enums import (
     DegreeLevel,
-    LocationType,
     NotificationChannel,
     NotificationType,
     OpportunityType,

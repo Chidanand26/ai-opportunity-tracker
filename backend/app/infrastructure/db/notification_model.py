@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from datetime import datetime
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Any
 
 from sqlalchemy import Boolean, DateTime, ForeignKey, Index, String, Text
 from sqlalchemy.dialects.postgresql import JSONB
@@ -10,8 +10,8 @@ from sqlalchemy.orm import Mapped, mapped_column, relationship
 from app.infrastructure.db.base import Base
 
 if TYPE_CHECKING:
-    from app.infrastructure.db.user_profile_model import UserProfileModel
     from app.infrastructure.db.opportunity_match_model import OpportunityMatchModel
+    from app.infrastructure.db.user_profile_model import UserProfileModel
 
 
 class NotificationModel(Base):
@@ -31,7 +31,7 @@ class NotificationModel(Base):
     body: Mapped[str] = mapped_column(Text, nullable=False)
     sent_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
     is_read: Mapped[bool] = mapped_column(Boolean, default=False)
-    metadata_: Mapped[dict] = mapped_column("metadata", JSONB, default=dict)
+    metadata_: Mapped[dict[str, Any]] = mapped_column("metadata", JSONB, default=dict)
 
     # Relationships
     profile: Mapped[UserProfileModel] = relationship(

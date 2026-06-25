@@ -9,8 +9,8 @@ from sqlalchemy.orm import Mapped, mapped_column, relationship
 from app.infrastructure.db.base import Base
 
 if TYPE_CHECKING:
-    from app.infrastructure.db.source_model import SourceModel
     from app.infrastructure.db.scrape_result_model import ScrapeResultModel
+    from app.infrastructure.db.source_model import SourceModel
 
 
 class ScrapeJobModel(Base):

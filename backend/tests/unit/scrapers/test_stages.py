@@ -8,25 +8,22 @@ from datetime import date, datetime
 from decimal import Decimal
 from unittest.mock import AsyncMock, MagicMock
 
-import pytest
-
 from app.domain.entities.opportunity import Opportunity
 from app.domain.entities.scrape_job import ScrapeJob
 from app.domain.entities.source import Source
-from app.domain.enums import OpportunityType, ScrapeStatus, SourceType
+from app.domain.enums import LocationType, OpportunityType, ScrapeStatus, SourceType
 from app.domain.ports.scraper_port import RawPosting
+from app.domain.value_objects.location import Location
 from app.infrastructure.scrapers.context import FetchedPage, NormalizedPosting, ScrapeContext
+from app.infrastructure.scrapers.stages.fingerprint import FingerprintStage
 from app.infrastructure.scrapers.stages.normalize import (
+    NormalizeStage,
     detect_opportunity_type,
     extract_stipend,
     parse_date_string,
     parse_location,
 )
 from app.infrastructure.scrapers.stages.validate import ValidateStage
-from app.infrastructure.scrapers.stages.fingerprint import FingerprintStage
-from app.infrastructure.scrapers.stages.normalize import NormalizeStage
-from app.domain.value_objects.location import Location
-from app.domain.enums import LocationType
 
 # ── Fixtures ──────────────────────────────────────────────────────────────────
 
@@ -222,11 +219,11 @@ class TestExtractStipend:
         assert currency == "USD"
 
     def test_dollar_without_comma(self):
-        amount, currency = extract_stipend("Pay: $5000")
+        amount, _ = extract_stipend("Pay: $5000")
         assert amount == Decimal("5000")
 
     def test_no_stipend_returns_none(self):
-        amount, currency = extract_stipend("This is a volunteer position.")
+        amount, _ = extract_stipend("This is a volunteer position.")
         assert amount is None
 
     def test_usd_suffix(self):

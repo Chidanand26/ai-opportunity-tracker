@@ -72,5 +72,7 @@ class Settings(BaseSettings):
         return self.environment == "production"
 
 
-# Module-level singleton — import this everywhere instead of re-instantiating
-settings = Settings()  # type: ignore[call-arg]
+# Module-level singleton — import this everywhere instead of re-instantiating.
+# Required fields are supplied from the environment; the pydantic mypy plugin
+# understands this, so no call-arg ignore is needed.
+settings = Settings()

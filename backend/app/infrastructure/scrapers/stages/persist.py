@@ -34,7 +34,7 @@ def _to_opportunity(posting: NormalizedPosting, source_id: int) -> Opportunity:
         fingerprint=posting.fingerprint,
         organization_id=None,    # resolved later via org lookup / enrichment
         description=raw.description,
-        location=raw.location.display(),
+        location=posting.location.display(),
         location_type=posting.location.location_type,
         city=posting.location.city,
         country=posting.location.country,

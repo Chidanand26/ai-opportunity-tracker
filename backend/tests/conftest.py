@@ -7,7 +7,7 @@ Add feature-specific fixtures in tests/unit/ and tests/integration/ conftest fil
 
 import pytest
 from fastapi.testclient import TestClient
-from httpx import AsyncClient, ASGITransport
+from httpx import ASGITransport, AsyncClient
 
 from app.main import create_app
 

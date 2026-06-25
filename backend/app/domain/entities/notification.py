@@ -1,5 +1,6 @@
 from dataclasses import dataclass, field
 from datetime import datetime
+from typing import Any
 
 from app.domain.enums import NotificationChannel, NotificationType
 
@@ -24,7 +25,7 @@ class Notification:
     opportunity_match_id: int | None = None
     sent_at: datetime | None = None
     is_read: bool = False
-    metadata: dict = field(default_factory=dict)   # e.g. email message-id for tracking
+    metadata: dict[str, Any] = field(default_factory=dict)  # e.g. email message-id
     created_at: datetime | None = None
     updated_at: datetime | None = None
 

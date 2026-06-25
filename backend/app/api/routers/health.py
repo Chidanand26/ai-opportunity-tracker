@@ -33,8 +33,8 @@ async def readiness() -> ReadinessResponse:
     Returns 200 only when DB and Redis are reachable.
     Orchestrators (k8s, ECS) use this to gate traffic.
     """
-    from app.infrastructure.db.session import check_db_connection
     from app.infrastructure.cache.redis_client import check_redis_connection
+    from app.infrastructure.db.session import check_db_connection
 
     db_ok = await check_db_connection()
     redis_ok = await check_redis_connection()

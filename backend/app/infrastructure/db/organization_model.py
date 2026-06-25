@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Any
 
 from sqlalchemy import Index, String, Text
 from sqlalchemy.dialects.postgresql import JSONB
@@ -9,9 +9,9 @@ from sqlalchemy.orm import Mapped, mapped_column, relationship
 from app.infrastructure.db.base import Base
 
 if TYPE_CHECKING:
+    from app.infrastructure.db.opportunity_model import OpportunityModel
     from app.infrastructure.db.professor_model import ProfessorModel
     from app.infrastructure.db.source_model import SourceModel
-    from app.infrastructure.db.opportunity_model import OpportunityModel
 
 
 class OrganizationModel(Base):
@@ -25,7 +25,7 @@ class OrganizationModel(Base):
     country: Mapped[str] = mapped_column(String(100), default="")
     city: Mapped[str] = mapped_column(String(100), default="")
     description: Mapped[str] = mapped_column(Text, default="")
-    metadata_: Mapped[dict] = mapped_column("metadata", JSONB, default=dict)
+    metadata_: Mapped[dict[str, Any]] = mapped_column("metadata", JSONB, default=dict)
 
     # Relationships
     professors: Mapped[list[ProfessorModel]] = relationship(

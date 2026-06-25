@@ -1,5 +1,6 @@
 from dataclasses import dataclass, field
 from datetime import datetime
+from typing import Any
 
 from app.domain.enums import OrganizationType
 
@@ -20,7 +21,7 @@ class Organization:
     country: str = ""
     city: str = ""
     description: str = ""
-    metadata: dict = field(default_factory=dict)  # flexible extra attrs for scrapers
+    metadata: dict[str, Any] = field(default_factory=dict)  # flexible extra attrs
     created_at: datetime | None = None
     updated_at: datetime | None = None
 

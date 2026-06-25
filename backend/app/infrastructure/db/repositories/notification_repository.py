@@ -1,7 +1,7 @@
 from sqlalchemy import select, update
 
 from app.domain.entities.notification import Notification
-from app.infrastructure.db.mappers.notification_mapper import apply_to_model, to_entity, to_model
+from app.infrastructure.db.mappers.notification_mapper import to_entity, to_model
 from app.infrastructure.db.notification_model import NotificationModel
 from app.infrastructure.db.repositories.base import BaseRepository
 

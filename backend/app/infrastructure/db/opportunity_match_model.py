@@ -9,9 +9,9 @@ from sqlalchemy.orm import Mapped, mapped_column, relationship
 from app.infrastructure.db.base import Base
 
 if TYPE_CHECKING:
-    from app.infrastructure.db.user_profile_model import UserProfileModel
-    from app.infrastructure.db.opportunity_model import OpportunityModel
     from app.infrastructure.db.notification_model import NotificationModel
+    from app.infrastructure.db.opportunity_model import OpportunityModel
+    from app.infrastructure.db.user_profile_model import UserProfileModel
 
 
 class OpportunityMatchModel(Base):

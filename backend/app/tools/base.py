@@ -9,7 +9,7 @@ underlying service methods directly.
 This module defines the protocol that all tools must implement.
 """
 
-from typing import Any, Protocol, runtime_checkable
+from typing import Any, ClassVar, Protocol, runtime_checkable
 
 
 @runtime_checkable
@@ -32,7 +32,7 @@ class ToolRegistry:
     Each tool's name and description form part of the agent's system prompt.
     """
 
-    _tools: dict[str, Tool] = {}
+    _tools: ClassVar[dict[str, Tool]] = {}
 
     @classmethod
     def register(cls, tool: Tool) -> Tool:

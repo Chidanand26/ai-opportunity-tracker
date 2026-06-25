@@ -13,7 +13,7 @@ Adding a new adapter:
 from __future__ import annotations
 
 import importlib
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Any
 
 if TYPE_CHECKING:
     from app.infrastructure.scrapers.adapter import BaseSourceAdapter
@@ -28,7 +28,7 @@ _BUILTIN_ADAPTERS: dict[str, str] = {
 }
 
 
-def get_adapter_class(adapter_class: str) -> type["BaseSourceAdapter"]:
+def get_adapter_class(adapter_class: str) -> type[BaseSourceAdapter]:
     """
     Resolve an adapter_class string to the concrete Python class.
 
@@ -45,10 +45,13 @@ def get_adapter_class(adapter_class: str) -> type["BaseSourceAdapter"]:
 
     module_path, _, class_name = dotted.rpartition(".")
     module = importlib.import_module(module_path)
-    return getattr(module, class_name)
+    adapter_cls: type[BaseSourceAdapter] = getattr(module, class_name)
+    return adapter_cls
 
 
-def make_adapter(adapter_class: str, source_config: dict | None = None) -> "BaseSourceAdapter":
+def make_adapter(
+    adapter_class: str, source_config: dict[str, Any] | None = None
+) -> BaseSourceAdapter:
     """Instantiate an adapter by its class string."""
     cls = get_adapter_class(adapter_class)
     return cls(source_config=source_config)

@@ -23,7 +23,7 @@ from app.domain.enums import ScrapeStatus
 from app.domain.ports.opportunity_repository import OpportunityRepository
 from app.domain.ports.scrape_job_repository import ScrapeJobRepository
 from app.infrastructure.scrapers.adapter import BaseSourceAdapter
-from app.infrastructure.scrapers.context import ScrapeContext
+from app.infrastructure.scrapers.context import PipelineStage, ScrapeContext
 from app.infrastructure.scrapers.exceptions import FetchError
 from app.infrastructure.scrapers.stages import (
     EmitStage,
@@ -80,7 +80,7 @@ class ScrapePipeline:
         except Exception as exc:
             logger.warning("job_update_failed", job_id=job.id, error=str(exc))
 
-        stages_before_emit = [
+        stages_before_emit: list[PipelineStage] = [
             FetchStage(adapter),
             ValidateStage(adapter),
             ParseStage(adapter),

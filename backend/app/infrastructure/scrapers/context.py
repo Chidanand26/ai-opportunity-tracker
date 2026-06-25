@@ -8,6 +8,7 @@ so a stage failure cannot corrupt the work of prior stages.
 from dataclasses import dataclass, field
 from datetime import date, datetime
 from decimal import Decimal
+from typing import Protocol, runtime_checkable
 
 from app.domain.entities.opportunity import Opportunity
 from app.domain.entities.scrape_job import ScrapeJob
@@ -79,3 +80,14 @@ class ScrapeContext:
 
     metrics: ScrapeMetrics = field(default_factory=ScrapeMetrics)
     errors: list[Exception] = field(default_factory=list)
+
+
+@runtime_checkable
+class PipelineStage(Protocol):
+    """A single step in the scrape pipeline.
+
+    Every stage takes the context, mutates it, and returns it so stages can be
+    chained uniformly by the pipeline orchestrator.
+    """
+
+    async def run(self, ctx: ScrapeContext) -> ScrapeContext: ...

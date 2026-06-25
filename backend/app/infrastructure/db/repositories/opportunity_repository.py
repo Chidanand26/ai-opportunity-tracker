@@ -1,4 +1,6 @@
 from sqlalchemy import and_, func, or_, select, update
+from sqlalchemy.engine import CursorResult
+from sqlalchemy.sql.elements import ColumnElement
 
 from app.domain.entities.opportunity import Opportunity
 from app.domain.enums import OpportunityType
@@ -75,25 +77,32 @@ class SqlAlchemyOpportunityRepository(BaseRepository):
         result = await self._session.execute(stmt)
         return [to_entity(m) for m in result.scalars().all()]
 
-    async def count_active(self) -> int:
-        stmt = select(func.count()).select_from(OpportunityModel).where(
-            OpportunityModel.is_active.is_(True)
+    async def count_active(
+        self,
+        opportunity_type: OpportunityType | None = None,
+        organization_id: int | None = None,
+    ) -> int:
+        stmt = (
+            select(func.count())
+            .select_from(OpportunityModel)
+            .where(OpportunityModel.is_active.is_(True))
         )
+        if opportunity_type is not None:
+            stmt = stmt.where(OpportunityModel.opportunity_type == str(opportunity_type))
+        if organization_id is not None:
+            stmt = stmt.where(OpportunityModel.organization_id == organization_id)
         result = await self._session.execute(stmt)
         return result.scalar_one()
 
     async def mark_inactive_by_source(self, source_id: int, except_ids: list[int]) -> int:
-        stmt = (
-            update(OpportunityModel)
-            .where(
-                and_(
-                    OpportunityModel.source_id == source_id,
-                    OpportunityModel.is_active.is_(True),
-                    OpportunityModel.id.notin_(except_ids) if except_ids else True,
-                )
-            )
-            .values(is_active=False)
-        )
+        conditions: list[ColumnElement[bool]] = [
+            OpportunityModel.source_id == source_id,
+            OpportunityModel.is_active.is_(True),
+        ]
+        if except_ids:
+            conditions.append(OpportunityModel.id.notin_(except_ids))
+        stmt = update(OpportunityModel).where(and_(*conditions)).values(is_active=False)
         result = await self._session.execute(stmt)
         await self._session.flush()
-        return result.rowcount  # type: ignore[return-value]
+        assert isinstance(result, CursorResult)
+        return result.rowcount

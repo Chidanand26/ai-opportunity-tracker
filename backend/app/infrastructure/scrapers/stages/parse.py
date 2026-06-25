@@ -23,7 +23,7 @@ logger = get_logger(__name__)
 
 
 class ParseStage:
-    def __init__(self, adapter: "BaseSourceAdapter") -> None:
+    def __init__(self, adapter: BaseSourceAdapter) -> None:
         self._adapter = adapter
 
     async def run(self, ctx: ScrapeContext) -> ScrapeContext:

@@ -10,8 +10,8 @@ from app.infrastructure.db.base import Base
 from app.infrastructure.db.skill_model import profile_skills
 
 if TYPE_CHECKING:
-    from app.infrastructure.db.opportunity_match_model import OpportunityMatchModel
     from app.infrastructure.db.notification_model import NotificationModel
+    from app.infrastructure.db.opportunity_match_model import OpportunityMatchModel
     from app.infrastructure.db.skill_model import SkillModel
 
 
@@ -36,8 +36,8 @@ class UserProfileModel(Base):
     github_url: Mapped[str] = mapped_column(String(500), default="")
 
     # Matching preferences (drive the pre-filter stage — no LLM call)
-    preferred_locations: Mapped[list] = mapped_column(JSONB, default=list)
-    preferred_opportunity_types: Mapped[list] = mapped_column(JSONB, default=list)
+    preferred_locations: Mapped[list[str]] = mapped_column(JSONB, default=list)
+    preferred_opportunity_types: Mapped[list[str]] = mapped_column(JSONB, default=list)
     min_stipend_usd: Mapped[float | None] = mapped_column(Float, nullable=True)
 
     # Notification preferences
