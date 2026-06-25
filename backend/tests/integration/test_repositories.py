@@ -51,6 +51,11 @@ from app.infrastructure.db.repositories.user_profile_repository import (
     SqlAlchemyUserProfileRepository,
 )
 
+# Run every test in this module on the session-scoped event loop so they share
+# the same loop as the session-scoped `engine` fixture. asyncpg connections are
+# loop-bound; without this the engine's connections cross loops -> InterfaceError.
+pytestmark = pytest.mark.asyncio(loop_scope="session")
+
 
 # ── Helpers ───────────────────────────────────────────────────────────────────
 

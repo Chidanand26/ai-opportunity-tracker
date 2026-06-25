@@ -96,6 +96,10 @@ plugins = ["pydantic.mypy"]
 # ── Pytest ────────────────────────────────────────────────────────────────────
 [tool.pytest.ini_options]
 asyncio_mode = "auto"
+# Async fixtures default to a session-scoped event loop so a session-scoped
+# engine and the function-scoped sessions/tests that use it share one loop.
+# Without this, asyncpg connections cross event loops and raise InterfaceError.
+asyncio_default_fixture_loop_scope = "session"
 testpaths = ["tests"]
 filterwarnings = [
     "ignore::DeprecationWarning",

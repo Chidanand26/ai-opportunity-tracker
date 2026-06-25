@@ -5,59 +5,80 @@ Requires:
   - PostgreSQL running (docker compose up -d db)
   - DATABASE_URL set in the environment (via .env)
 
+Event-loop correctness (the critical part):
+  asyncpg connections are bound to the event loop that created them. If the
+  engine lives on one loop (session scope) and a test runs on another (function
+  scope), the first query raises "Task got Future attached to a different loop",
+  surfaced by SQLAlchemy as InterfaceError.
+
+  To avoid that, every async fixture AND every async test in this package runs
+  on a single session-scoped event loop:
+    - asyncio_default_fixture_loop_scope = "session"  (pyproject.toml)
+    - pytestmark = pytest.mark.asyncio(loop_scope="session")  (in test modules)
+    - loop_scope="session" on the fixtures below
+  We do NOT override the `event_loop` fixture — that approach is deprecated in
+  pytest-asyncio 0.23+ and is itself a cause of the RuntimeError seen here.
+
 Isolation strategy:
-  - Tables are created once per session and dropped after.
-  - Each test wraps its work in a SAVEPOINT, then rolls back to it.
-    This gives per-test isolation without recreating the schema on every test.
+  The schema is created once per session. Each test runs against a session bound
+  to a single connection wrapped in an outer transaction that is rolled back at
+  the end of the test, so no data leaks between tests. `join_transaction_mode=
+  "create_savepoint"` means even an inner commit only commits a SAVEPOINT, never
+  the outer transaction — isolation holds regardless of what the code under test
+  does.
 """
 
-import asyncio
 from collections.abc import AsyncGenerator
 
-import pytest
 import pytest_asyncio
-from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker, create_async_engine
+from sqlalchemy.ext.asyncio import (
+    AsyncConnection,
+    AsyncEngine,
+    AsyncSession,
+    async_sessionmaker,
+    create_async_engine,
+)
+from sqlalchemy.pool import NullPool
 
 from app.core.config import settings
 from app.infrastructure.db.models import Base
 
 
-@pytest.fixture(scope="session")
-def event_loop():
-    """Single event loop shared by all tests in the integration session."""
-    loop = asyncio.new_event_loop()
-    yield loop
-    loop.close()
+@pytest_asyncio.fixture(scope="session", loop_scope="session")
+async def engine() -> AsyncGenerator[AsyncEngine, None]:
+    """
+    One engine + schema for the whole session, pinned to the session loop.
 
-
-@pytest_asyncio.fixture(scope="session")
-async def engine():
-    """One engine + schema for the whole session."""
-    _engine = create_async_engine(settings.database_url, echo=False)
-    async with _engine.begin() as conn:
+    NullPool ensures no connection is cached and later reused on a stale loop —
+    a second layer of defence against cross-loop asyncpg errors.
+    """
+    eng = create_async_engine(settings.database_url, echo=False, poolclass=NullPool)
+    async with eng.begin() as conn:
         await conn.run_sync(Base.metadata.create_all)
-    yield _engine
-    async with _engine.begin() as conn:
+    yield eng
+    async with eng.begin() as conn:
         await conn.run_sync(Base.metadata.drop_all)
-    await _engine.dispose()
+    await eng.dispose()
 
 
-@pytest_asyncio.fixture
-async def session(engine) -> AsyncGenerator[AsyncSession, None]:
+@pytest_asyncio.fixture(loop_scope="session")
+async def session(engine: AsyncEngine) -> AsyncGenerator[AsyncSession, None]:
     """
-    Per-test session using a nested transaction (SAVEPOINT).
-
-    The outer transaction is never committed; the inner SAVEPOINT is rolled
-    back after each test so no data leaks between tests.
+    Per-test session bound to a single connection inside an outer transaction
+    that is always rolled back — fast, fully isolated, no schema rebuild per test.
     """
-    factory = async_sessionmaker(engine, class_=AsyncSession, expire_on_commit=False)
-    async with factory() as sess:
-        # Begin an outer transaction — never committed
-        await sess.begin()
-        # Create a SAVEPOINT so individual tests can flush without committing
-        await sess.begin_nested()
-        try:
-            yield sess
-        finally:
-            # Roll back to the SAVEPOINT, then close the outer transaction
-            await sess.rollback()
+    conn: AsyncConnection = await engine.connect()
+    trans = await conn.begin()
+    factory = async_sessionmaker(
+        bind=conn,
+        class_=AsyncSession,
+        expire_on_commit=False,
+        join_transaction_mode="create_savepoint",
+    )
+    sess = factory()
+    try:
+        yield sess
+    finally:
+        await sess.close()
+        await trans.rollback()
+        await conn.close()
