@@ -1,0 +1,94 @@
+[project]
+name = "ai-opportunity-tracker"
+version = "0.1.0"
+description = "AI-powered tracker for internships, research positions, fellowships, and more"
+requires-python = ">=3.12"
+
+dependencies = [
+    # ── Web framework ────────────────────────────────────────────────────────
+    "fastapi[standard]>=0.115.0",     # includes uvicorn, python-multipart, httpx
+
+    # ── Database ─────────────────────────────────────────────────────────────
+    "sqlalchemy[asyncio]>=2.0.0",     # async ORM
+    "alembic>=1.13.0",                # migrations
+    "asyncpg>=0.30.0",                # async PostgreSQL driver
+
+    # ── Config & validation ──────────────────────────────────────────────────
+    "pydantic-settings>=2.6.0",       # env-based settings on top of Pydantic v2
+
+    # ── Cache / message broker ───────────────────────────────────────────────
+    "redis[hiredis]>=5.2.0",          # hiredis = faster C parser
+    "celery[redis]>=5.4.0",           # task queue + beat scheduler
+
+    # ── Scraping ─────────────────────────────────────────────────────────────
+    "playwright>=1.49.0",             # headless browser for JS-heavy pages
+    "beautifulsoup4>=4.12.0",         # HTML parsing
+    "lxml>=5.3.0",                    # fast HTML/XML parser backend for BS4
+    "httpx>=0.28.0",                  # async HTTP client for static pages
+
+    # ── LLM providers ────────────────────────────────────────────────────────
+    "anthropic>=0.40.0",
+    "openai>=1.57.0",                 # also used for any OpenAI-compatible endpoint
+
+    # ── Observability ────────────────────────────────────────────────────────
+    "structlog>=24.4.0",              # structured JSON logging
+
+    # ── Utilities ────────────────────────────────────────────────────────────
+    "tenacity>=9.0.0",                # retry logic with exponential backoff
+    "python-slugify>=8.0.0",          # URL-safe slugs for dedup fingerprints
+]
+
+[dependency-groups]
+dev = [
+    "pytest>=8.3.0",
+    "pytest-asyncio>=0.24.0",
+    "pytest-cov>=6.0.0",
+    "mypy>=1.13.0",
+    "ruff>=0.8.0",
+    "types-beautifulsoup4>=4.12.0",
+    "httpx>=0.28.0",                  # async test client for FastAPI
+]
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+# ── Ruff (linter + formatter — replaces black, isort, flake8) ────────────────
+[tool.ruff]
+line-length = 100
+target-version = "py312"
+
+[tool.ruff.lint]
+select = [
+    "E",    # pycodestyle errors
+    "F",    # pyflakes
+    "I",    # isort
+    "UP",   # pyupgrade — modernize syntax
+    "B",    # bugbear — common mistakes
+    "SIM",  # simplify
+    "TCH",  # type-checking imports
+    "RUF",  # ruff-specific rules
+]
+ignore = [
+    "E501",   # line length — handled by formatter
+    "B008",   # do not perform function calls in default arguments (FastAPI Depends pattern)
+]
+
+[tool.ruff.format]
+quote-style = "double"
+indent-style = "space"
+
+# ── Mypy ─────────────────────────────────────────────────────────────────────
+[tool.mypy]
+python_version = "3.12"
+strict = true
+ignore_missing_imports = true
+plugins = ["pydantic.mypy"]
+
+# ── Pytest ────────────────────────────────────────────────────────────────────
+[tool.pytest.ini_options]
+asyncio_mode = "auto"
+testpaths = ["tests"]
+filterwarnings = [
+    "ignore::DeprecationWarning",
+]
