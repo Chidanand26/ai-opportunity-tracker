@@ -1,0 +1,79 @@
+# ─────────────────────────────────────────────────────────────────────────────
+# backend/.dockerignore
+#
+# Controls which files are sent to the Docker daemon as the build context.
+# The build context is set to ./backend in docker-compose.yml, so paths here
+# are relative to the backend/ directory.
+#
+# Why the build context was ~360 MB:
+#   .venv/ contains the local virtual environment created by `uv sync` on the
+#   host. Without this file, Docker sent every installed package (~370 MB) to
+#   the daemon, then COPY . . overwrote the container's own venv with it.
+# ─────────────────────────────────────────────────────────────────────────────
+
+# ── Local virtual environment (the main offender — 370 MB) ───────────────────
+.venv/
+venv/
+env/
+ENV/
+
+# ── Python bytecode — never useful inside an image ───────────────────────────
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+
+# ── Tool caches ───────────────────────────────────────────────────────────────
+.pytest_cache/
+.ruff_cache/
+.mypy_cache/
+.hypothesis/
+
+# ── Test output and coverage ──────────────────────────────────────────────────
+.coverage
+.coverage.*
+coverage.xml
+htmlcov/
+
+# ── Environment files — secrets must never be baked into an image ─────────────
+.env
+.env.local
+.env.*.local
+# Keep the example file so documentation is available
+!.env.example
+
+# ── Logs ─────────────────────────────────────────────────────────────────────
+*.log
+logs/
+
+# ── Git metadata ──────────────────────────────────────────────────────────────
+.git/
+.gitignore
+.gitattributes
+
+# ── IDE and editor files ──────────────────────────────────────────────────────
+.idea/
+.vscode/
+*.swp
+*.swo
+.editorconfig
+
+# ── OS-generated files ────────────────────────────────────────────────────────
+.DS_Store
+.DS_Store?
+Thumbs.db
+ehthumbs.db
+
+# ── Build / dist artifacts ────────────────────────────────────────────────────
+dist/
+build/
+*.egg-info/
+*.egg
+wheels/
+
+# ── Alembic migration SQL dumps (generated, not source) ──────────────────────
+# Keep: alembic/env.py, alembic/versions/*.py, alembic.ini
+# (nothing to exclude here — .py files are needed for migrations)
+
+# ── Documentation (not needed at runtime) ────────────────────────────────────
+*.md
