@@ -49,9 +49,17 @@ dev = [
     "httpx>=0.28.0",                  # async test client for FastAPI
 ]
 
-[build-system]
-requires = ["hatchling"]
-build-backend = "hatchling.build"
+# ── uv application mode ──────────────────────────────────────────────────────
+# This project is a deployed service, not a library. "package = false" tells
+# uv to install only the declared dependencies and skip building/installing
+# the project itself as a wheel. This avoids Hatch failing to locate a package
+# named "ai_opportunity_tracker/" when the real source tree is "app/".
+#
+# The app/ directory is importable at runtime because Docker sets WORKDIR /app
+# and copies source there — Python resolves "from app.xxx import yyy" via the
+# working directory, not via an installed package.
+[tool.uv]
+package = false
 
 # ── Ruff (linter + formatter — replaces black, isort, flake8) ────────────────
 [tool.ruff]
