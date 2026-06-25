@@ -114,12 +114,23 @@ Source-level config overrides (in `source.config` JSONB):
 
 ## Testing
 
-```bash
-# Run all scraper unit tests — no Docker, no network needed
+All commands work on **Windows PowerShell, CMD, macOS, and Linux** — they run inside
+the Docker container where the OS is always Linux.
+
+```powershell
+# Run all scraper unit tests — no network needed, works offline
 docker compose exec api uv run pytest tests/unit/scrapers/ -v
 
-# Test a specific adapter interactively
-docker compose exec api python -c "
+# Run just the RSS adapter tests
+docker compose exec api uv run pytest tests/unit/scrapers/test_rss_feed.py -v
+
+# Test a specific adapter interactively (single-line for PowerShell/CMD)
+docker compose exec api uv run python -c "import asyncio; from app.domain.entities.source import Source; from app.domain.enums import SourceType; from app.infrastructure.scrapers.sources.rss_feed import RssFeedAdapter; source = Source(id=1, name='Test', url='https://example.com/feed.rss', source_type=SourceType.RSS_FEED, adapter_class='rss_feed'); print(asyncio.run(RssFeedAdapter().get_start_urls(source)))"
+```
+
+**Git Bash / macOS / Linux** — multi-line version:
+```bash
+docker compose exec api uv run python -c "
 import asyncio
 from app.domain.entities.source import Source
 from app.domain.enums import SourceType
@@ -127,7 +138,7 @@ from app.infrastructure.scrapers.sources.rss_feed import RssFeedAdapter
 
 async def main():
     source = Source(
-        id=1, name='Test', url='https://feeds.feedburner.com/example',
+        id=1, name='Test', url='https://example.com/feed.rss',
         source_type=SourceType.RSS_FEED, adapter_class='rss_feed',
     )
     async with RssFeedAdapter() as adapter:

@@ -202,10 +202,21 @@ erDiagram
 
 ## Running
 
+See the [root README](../README.md) for full cross-platform setup instructions and a
+complete command reference for Windows, macOS, and Linux.
+
+**Git Bash / macOS / Linux:**
 ```bash
-make up             # start all services
-make migrate        # apply migrations
-make seed           # seed default user + example sources
-make test           # full test suite
-make shell-api      # bash into API container
+make up && make migrate && make seed
+make test
+make shell-api
+```
+
+**PowerShell / CMD (Windows):**
+```powershell
+docker compose up -d
+docker compose exec api uv run alembic upgrade head
+docker compose exec api uv run python scripts/seed.py
+docker compose exec api uv run pytest tests/ -v
+docker compose exec api bash
 ```

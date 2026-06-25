@@ -1,25 +1,51 @@
+# ─────────────────────────────────────────────────────────────────────────────
+# Makefile — development shortcuts
+#
+# Requires: make (included in Git Bash on Windows, pre-installed on macOS/Linux)
+#
+# Windows users have two options:
+#   1. Git Bash (recommended) — run these make commands as-is
+#   2. PowerShell / CMD      — use the docker compose equivalents shown in README.md
+#
+# Every target below is a thin wrapper over a `docker compose exec ...` command.
+# If make is unavailable, run the docker compose command directly.
+# ─────────────────────────────────────────────────────────────────────────────
+
 .PHONY: help up down build logs test lint format typecheck migrate seed
 
 # Default target
 help:
-	@echo "AI Opportunity Tracker — available commands:"
+	@echo "AI Opportunity Tracker — available commands"
 	@echo ""
-	@echo "  make up           Start all services (detached)"
-	@echo "  make down         Stop all services"
-	@echo "  make build        Rebuild Docker images"
-	@echo "  make logs         Stream logs for all services"
-	@echo "  make logs-api     Stream API logs only"
-	@echo "  make shell-api    Open a shell in the API container"
-	@echo "  make shell-db     Open psql in the DB container"
+	@echo "  Requires: Git Bash (Windows), or any shell on macOS/Linux."
+	@echo "  PowerShell/CMD users: see README.md for docker compose equivalents."
 	@echo ""
-	@echo "  make migrate      Apply all pending migrations"
-	@echo "  make migrate-create MSG='description'  Create a new migration"
-	@echo "  make seed         Seed the database with initial data"
+	@echo "  Services"
+	@echo "    make up                         Start all services (detached)"
+	@echo "    make down                       Stop all services"
+	@echo "    make build                      Rebuild Docker images"
+	@echo "    make logs                       Stream logs (all services)"
+	@echo "    make logs-api                   Stream API logs"
+	@echo "    make logs-worker                Stream worker logs"
+	@echo "    make shell-api                  bash shell in API container"
+	@echo "    make shell-db                   psql in database container"
 	@echo ""
-	@echo "  make test         Run the full test suite"
-	@echo "  make lint         Run ruff linter"
-	@echo "  make format       Run ruff formatter"
-	@echo "  make typecheck    Run mypy type checker"
+	@echo "  Database"
+	@echo "    make migrate                    Apply all pending migrations"
+	@echo "    make migrate-create MSG='...'   Create a new migration"
+	@echo "    make migrate-down               Roll back one migration"
+	@echo "    make seed                       Seed default data"
+	@echo ""
+	@echo "  Quality"
+	@echo "    make test                       Full test suite (with coverage)"
+	@echo "    make test-unit                  Unit tests only (no infra)"
+	@echo "    make test-integration           Integration tests"
+	@echo "    make lint                       Ruff linter"
+	@echo "    make format                     Ruff formatter"
+	@echo "    make typecheck                  mypy type checker"
+	@echo ""
+	@echo "  Scrapers"
+	@echo "    make playwright-install         Install Chromium in the container"
 
 # ─── Services ───────────────────────────────────────────────────────────────
 
