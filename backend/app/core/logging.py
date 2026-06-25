@@ -18,7 +18,10 @@ def setup_logging() -> None:
 
     shared_processors: list[structlog.types.Processor] = [
         structlog.contextvars.merge_contextvars,
-        structlog.stdlib.add_logger_name,
+        # structlog.stdlib.add_logger_name is intentionally absent:
+        # it reads logger.name, which exists on stdlib logging.Logger but not
+        # on PrintLogger (which only has _file/_write/_flush). The module name
+        # is injected via get_logger().bind(logger=name) instead.
         structlog.stdlib.add_log_level,
         structlog.processors.TimeStamper(fmt="iso"),
         structlog.processors.StackInfoRenderer(),
@@ -52,5 +55,14 @@ def setup_logging() -> None:
 
 
 def get_logger(name: str) -> structlog.BoundLogger:
-    """Return a named structlog logger. Use in every module that needs logging."""
-    return structlog.get_logger(name)
+    """
+    Return a structlog logger with the module name pre-bound.
+
+    Usage: logger = get_logger(__name__)
+
+    The name is injected as logger=<name> in the event dict so it appears in
+    every log line. We bind it explicitly because PrintLoggerFactory ignores
+    positional arguments passed to structlog.get_logger(), so passing the name
+    there has no effect.
+    """
+    return structlog.get_logger().bind(logger=name)
