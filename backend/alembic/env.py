@@ -6,9 +6,10 @@ from sqlalchemy import pool
 from sqlalchemy.engine import Connection
 from sqlalchemy.ext.asyncio import async_engine_from_config
 
-# Import Base so autogenerate can detect model changes.
-# All ORM models must be imported (directly or transitively) before this runs.
-from app.infrastructure.db.base import Base  # noqa: F401
+# Import models registry so ALL tables are registered in Base.metadata.
+# autogenerate diffs Base.metadata against the live schema — every model
+# file must be imported (directly or transitively) before this line.
+from app.infrastructure.db.models import Base  # noqa: F401 — triggers all model imports
 from app.core.config import settings
 
 config = context.config

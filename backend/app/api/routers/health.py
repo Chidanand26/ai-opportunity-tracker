@@ -30,15 +30,19 @@ async def liveness() -> HealthResponse:
 @router.get("/ready", response_model=ReadinessResponse, summary="Readiness check")
 async def readiness() -> ReadinessResponse:
     """
-    Returns 200 only when all dependencies (DB, Redis) are reachable.
-    Used by orchestrators (k8s, ECS) to gate traffic.
-
-    Future: add actual db ping and redis ping here.
+    Returns 200 only when DB and Redis are reachable.
+    Orchestrators (k8s, ECS) use this to gate traffic.
     """
+    from app.infrastructure.db.session import check_db_connection
+    from app.infrastructure.cache.redis_client import check_redis_connection
+
+    db_ok = await check_db_connection()
+    redis_ok = await check_redis_connection()
+
     return ReadinessResponse(
-        status="ok",
+        status="ok" if (db_ok and redis_ok) else "degraded",
         version=settings.app_version,
         environment=settings.environment,
-        database="not_checked",  # TODO: implement in Step 4 (database layer)
-        redis="not_checked",     # TODO: implement in Step 4
+        database="ok" if db_ok else "unreachable",
+        redis="ok" if redis_ok else "unreachable",
     )
